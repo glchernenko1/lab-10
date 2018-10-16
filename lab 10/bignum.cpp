@@ -211,6 +211,7 @@ bignum bignum::operator+(const bignum & other) const
 	int  sum;
 	int ost = 0;
 	int min_size, max_size;
+	//if (this->size() == other.size() && this->is_negative() != other.is_negative()) return rez;
 	if (this->size() > other.size())
 	{
 		max_size = this->size();
@@ -220,6 +221,7 @@ bignum bignum::operator+(const bignum & other) const
 	{
 		max_size = other.size();  min_size = this->size();
 	}
+	
 	if (this->is_negative() && other.is_negative() || !this->is_negative() && !other.is_negative())
 	{
 		rez.negative = this->is_negative();
@@ -251,6 +253,7 @@ bignum bignum::operator+(const bignum & other) const
 		if (ost!=0) rez.digits.append(ost);
 		
 	}
+	
 	if (this->is_negative() && !other.is_negative() || !this->is_negative() && other.is_negative())
 	{
 		
@@ -267,6 +270,8 @@ bignum bignum::operator+(const bignum & other) const
 					ost = 1;
 					sum += 10;
 				}
+				else
+					ost = 0;
 				if (i == 0) rez.digits[i] = (sum);
 				else
 					rez.digits.append(sum);
@@ -310,6 +315,8 @@ bignum bignum::operator+(const bignum & other) const
 					ost = 1;
 					sum += 10;
 				}
+				else 
+					ost = 0;
 				if (i == 0) rez.digits[i] = (sum);
 				else
 					rez.digits.append(sum);
@@ -331,7 +338,8 @@ bignum bignum::operator+(const bignum & other) const
 			}
 			if (other.size() < max_size)
 				for (int i = min_size; i < max_size; ++i)
-				{
+				{	
+					
 					sum = other.digits[i] - ost;
 					if (sum < 0)
 					{
@@ -396,10 +404,11 @@ bignum bignum::pow(const bignum & exp) const
 bignum bignum::operator/(const bignum & other) const
 {
 	bignum rez = *this;
-	bignum i = -1;
-	for (; rez > bignum(0); i += 1)
+	bignum i = 0;
+	for (; rez > bignum(0); )
 	{
 		rez -= other;
+		if (rez >= bignum(0)) i += 1;
 	}
 	return i;
 }
@@ -413,6 +422,7 @@ bignum & bignum::operator/=(const bignum & other)
 bignum bignum::operator%(const bignum & other) const
 {
 	bignum rez = *this / other;
+	
 	return bignum(*this-rez*other);
 }
 
@@ -426,32 +436,40 @@ bignum bignum::gcd(const bignum & other) const
 {
 	bignum x = *this;
 	bignum y = other;
-	while ((x%y) != bignum(0))
+	bignum x1;
+	while (x%y!=bignum(0)) 
 	{
-		bignum x1 = x;
+
+		x1=x;
 		x = y;
-		y = x1 % y;
-		
+		y =x1% y;
 	}
 	return y;
+}
+
+bool bignum::is_prime() const
+{
+	for (bignum i = 2; i < *this; i += 1)
+		if (*this%i == bignum(0)) return false;
+	return true;
 }
 
 
 
 
-//std::istream &operator>>(std::istream &is, bignum &b)
-//{
-//    std::string str;
-//    while (is.peek() == '-' || isdigit(is.peek()))
-//    {
-//        str += is.get();
-//    }
-//    b = bignum(str.c_str());
-//    return is;
-//}
+std::istream &operator>>(std::istream &is, bignum &b)
+{
+    std::string str;
+    while (is.peek() == '-' || isdigit(is.peek()))
+    {
+        str += is.get();
+    }
+    b = bignum(str.c_str());
+    return is;
+}
 
-//std::ostream &operator<<(std::ostream &os, const bignum &b)
-//{
-//    os << (string)b;
-//    return os;
-//}
+std::ostream &operator<<(std::ostream &os, const bignum &b)
+{
+    os << (std::string)b;
+    return os;
+}

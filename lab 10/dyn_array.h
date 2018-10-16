@@ -58,28 +58,13 @@ public:
     // Операция доступа к элементам
     datatype &operator[](int index)
 	{
-
-		try {
-			if (index >= size) throw std::out_of_range("Выход за пределы массива!!! ");
 			return data[index];
-		}
-		catch (std::out_of_range a)
-		{
-			std::cout << a.what();
-		}
 	}
 
     // Операция доступа к элементам для чтения
     datatype operator[](int index) const
 	{
-		try {
-			if (index >= size) throw std::out_of_range("Выход за пределы массива!!! ");
 		return data[index];
-	}
-	catch (std::out_of_range a)
-	{
-		std::cout << a.what();
-	}
 	}
 
 
