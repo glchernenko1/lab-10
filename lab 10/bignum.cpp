@@ -9,9 +9,6 @@
 #include <cctype>
 #include <string>
 
-bignum::bignum() : digits(), negative(false)
-{}
-
 bignum::bignum(int64_t number) : digits()
 {
 	bool a = true;
@@ -148,14 +145,16 @@ bool bignum::operator==(const bignum &other) const
     if (negative != other.negative ||
         digits.count() != other.digits.count())
         return false;
-    
-    return digits == other.digits;
+	int i = 0;
+    for (; i< other.digits.count() && digits[i]==other.digits[i]; ++i)
+    return i==other.digits.count()-1;
 }
 
 bool bignum::operator!=(const bignum &other) const
 {
     return !(*this == other);
 }
+
 
 bool bignum::operator>(const bignum & other) const //где то тут надл что то исправиться 
 {
@@ -168,6 +167,8 @@ bool bignum::operator>(const bignum & other) const //где то тут надл
 			else
 				for (int i = other.size() - 1; i >= 0; --i)
 					if (digits[i] > other.digits[i]) return true;
+					else
+						if(digits[i] < other.digits[i]) return false;
 	if (other.negative && negative)
 		if (this->size() < other.size()) return true;
 		else
@@ -175,79 +176,32 @@ bool bignum::operator>(const bignum & other) const //где то тут надл
 			else
 				for (int i = other.size() - 1; i >= 0; --i)
 					if (digits[i] < other.digits[i]) return true;
-	return false;
-}
-
-bool bignum::operator<=(const bignum & other) const
-{
-
-	if (!other.negative && negative) return true;
-	if (other.negative && !negative) return false;
-	if (!other.negative && !negative)
-		if (this->size() <= other.size()) return true;
-		else
-			if (this->size() > other.size()) return false;
-			else
-				for (int i = other.size() - 1; i >= 0; --i)
-					if (digits[i] <= other.digits[i]) return true;
-	if (other.negative && negative)
-		if (this->size() >= other.size()) return true;
-		else
-			if (this->size() < other.size()) return false;
-			else
-				for (int i = other.size() - 1; i >= 0; --i)
-					if (digits[i] >= other.digits[i]) return true;
-	return false;
-}
-
-
-bool bignum::operator<(const bignum & other) const
-{
-	if (!other.negative && negative) return true;
-	if (other.negative && !negative) return false;
-	if (!other.negative && !negative)
-		if (this->size() < other.size()) return true;
-		else
-			if (this->size() > other.size()) return false;
-			else
-				for (int i = other.size() - 1; i >= 0; --i)
-					if (digits[i] < other.digits[i]) return true;
-	if (other.negative && negative)
-		if (this->size() > other.size()) return true;
-		else
-			if (this->size() < other.size()) return false;
-			else
-				for (int i = other.size() - 1; i >= 0; --i)
-					if (digits[i] > other.digits[i]) return true;
+					else
+						if (digits[i] > other.digits[i]) return false;
 	return false;
 }
 
 bool bignum::operator>=(const bignum & other) const
 {
-	if (other.negative && !negative) return true;
-	if (!other.negative && negative) return false;
-	if (!other.negative && !negative)
-		if (this->size() >= other.size()) return true;
-		else
-			if (this->size() < other.size()) return false;
-			else
-				for (int i = other.size() - 1; i >= 0; --i)
-					if (digits[i] >= other.digits[i]) return true;
-	if (other.negative && negative)
-		if (this->size() <= other.size()) return true;
-		else
-			if (this->size() > other.size()) return false;
-			else
-				for (int i = other.size() - 1; i >= 0; --i)
-					if (digits[i] <= other.digits[i]) return true;
-	return false;
+	if (other == *this) return true;
+	return (*this > other);
+}
+
+bool bignum::operator<(const bignum & other) const
+{
+	return (other > *this);
+}
+bool bignum::operator<=(const bignum & other) const
+{
+	if (other == *this) return true;
+	return (other > *this);
 }
 
 bignum bignum::operator-() const
 {
 	bool a = true;
 	if (negative) a = false;
-	
+
 	return bignum(a, digits);
 }
 
@@ -300,51 +254,95 @@ bignum bignum::operator+(const bignum & other) const
 	if (this->is_negative() && !other.is_negative() || !this->is_negative() && other.is_negative())
 	{
 		
-		if ((abs(other)<abs(*this) && this->is_negative()) || (!(abs(other)<abs(*this)) && other.is_negative())) rez.negative = true;
+		if ((abs(other)<abs(*this) && this->is_negative()) || ((abs(other)>abs(*this)) && other.is_negative())) rez.negative = true;
 		else
 			rez.negative = false;
-
-		for (int i = 0; i < min_size; ++i)
+		if (!rez.negative)
 		{
-			sum = digits[i] - other.digits[i] - ost;
-			if (sum < 0)
+			for (int i = 0; i < min_size; ++i)
 			{
-				ost = 1;
-				sum += 10;
-			}
-			if (i == 0) rez.digits[i] = (sum);
-			else
-				rez.digits.append(sum);
-		}
-		if (this->size() < max_size)
-		{
-			for (int i = min_size; i < max_size; ++i)
-			{
-				sum = other.digits[i] - ost;
+				sum = digits[i] - other.digits[i] - ost;
 				if (sum < 0)
 				{
 					ost = 1;
 					sum += 10;
 				}
+				if (i == 0) rez.digits[i] = (sum);
 				else
-					ost = 0;
-				rez.digits.append(sum);
+					rez.digits.append(sum);
 			}
+			if (this->size() < max_size)
+			{
+				for (int i = min_size; i < max_size; ++i)
+				{
+					sum = other.digits[i] - ost;
+					if (sum < 0)
+					{
+						ost = 1;
+						sum += 10;
+					}
+					else
+						ost = 0;
+					rez.digits.append(sum);
+				}
+			}
+			if (other.size() < max_size)
+				for (int i = min_size; i < max_size; ++i)
+				{
+					sum = this->digits[i] - ost;
+					if (sum < 0)
+					{
+						ost = 1;
+						sum += 10;
+					}
+					else
+						ost = 0;
+					rez.digits.append(sum);
+				}
 		}
-		if (other.size() < max_size)
-			for (int i = min_size; i < max_size; ++i)
-			{	
-				sum = this->digits[i] - ost;
+		else
+		{
+			for (int i = 0; i < min_size; ++i)
+			{
+				sum = other.digits[i]-digits[i] - ost;
 				if (sum < 0)
 				{
 					ost = 1;
 					sum += 10;
 				}
+				if (i == 0) rez.digits[i] = (sum);
 				else
-					ost = 0;
-				rez.digits.append(sum);
+					rez.digits.append(sum);
 			}
-
+			if (this->size() < max_size)
+			{
+				for (int i = min_size; i < max_size; ++i)
+				{
+					sum = digits[i] - ost;
+					if (sum < 0)
+					{
+						ost = 1;
+						sum += 10;
+					}
+					else
+						ost = 0;
+					rez.digits.append(sum);
+				}
+			}
+			if (other.size() < max_size)
+				for (int i = min_size; i < max_size; ++i)
+				{
+					sum = other.digits[i] - ost;
+					if (sum < 0)
+					{
+						ost = 1;
+						sum += 10;
+					}
+					else
+						ost = 0;
+					rez.digits.append(sum);
+				}
+		}
 		//if (sum != 0) rez.digits.append(sum);
 	}
 	while (rez.size() != 1 && rez.digits[rez.size() - 1] == 0) rez.digits.remove(rez.size() - 1);
@@ -426,18 +424,16 @@ bignum & bignum::operator%=(const bignum & other)
 
 bignum bignum::gcd(const bignum & other) const
 {
-	bignum rez = *this;
-	bignum rez1 = *this;
-	bignum other1 = other;
-	while ((rez % other1) > bignum(0))
+	bignum x = *this;
+	bignum y = other;
+	while ((x%y) != bignum(0))
 	{
-		rez %= other1;
-		other1 = rez - rez1 / other1 * rez1%other1;
-		rez1 = rez;
-		std::cout << std::string(rez) << std::endl;
-		std::cout << std::string(other1) << std::endl;
-		return rez;
+		bignum x1 = x;
+		x = y;
+		y = x1 % y;
+		
 	}
+	return y;
 }
 
 

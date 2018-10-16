@@ -25,7 +25,7 @@ public:
     */
 
     // Конструктор по умолчанию
-    bignum();
+	bignum():negative(false), digits() {};
     
     // Конструктор преобразования
     bignum(int64_t number);
